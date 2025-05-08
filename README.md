@@ -60,3 +60,9 @@ The flow of data is:
 6- If the Lambda fails to process the message after 3 attempts, it is moved to a Dead-Letter Queue (DLQ).
 
 ![Architecture Diagram](Architecture-Diagram.png)
+
+Visibility timeout is the period during which a message becomes invisible to other consumers after being picked up. If the Lambda function processes the message successfully, the message is deleted. If it fails or times out, the message becomes visible again and is retried. Visibility timeout prevents duplicate processing of the same message by multiple Lambda instances and gives the function a chance to complete its task before others can see it.
+A DLQ stores messages that repeatedly fail processing. In this assignment, if the Lambda fails to process a message 3 times (maxReceiveCount = 3), the message is moved to the DLQ.
+It prevents problematic messages from clogging the main queue and gives developers a chance to inspect and debug the failed data separately.
+This actually happened to me during this assignment, I published the test order, and the message made it all the way to Lambda but then it failed because the Lambda didn’t have permission to write to DynamoDB. Since I hadn't set up the IAM role properly, the function kept failing. However thanks to the visibility timeout, the message wasn’t being processed in parallel, and after three failed attempts, it was moved to the DLQ automatically. 
+
